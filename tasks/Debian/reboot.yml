@@ -1,0 +1,29 @@
+---
+- name: check if a reboot is needed
+  register: reboot_required_file
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+    get_checksum: false
+
+- name: reboot and gather facts
+  when: reboot_required_file.stat.exists
+  block:
+    - name: reboot
+      block:
+        - name: try graceful reboot
+          ansible.builtin.reboot:
+            connect_timeout: 5
+            reboot_timeout: "{{ reboot_timeout }}"
+            pre_reboot_delay: "{{ pre_reboot_delay }}"
+            post_reboot_delay: "{{ post_reboot_delay }}"
+            test_command: "{{ reboot_test_command }}"
+      rescue:
+        - name: force reboot
+          ansible.builtin.reboot:
+            connect_timeout: 5
+            reboot_timeout: "{{ reboot_timeout + pre_reboot_delay + post_reboot_delay }}"
+            test_command: "{{ reboot_test_command }}"
+            reboot_command: /sbin/reboot
+
+    - name: gather facts after reboot
+      ansible.builtin.setup:

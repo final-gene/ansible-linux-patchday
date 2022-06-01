@@ -1,0 +1,39 @@
+---
+- name: fetch sources.list.d files
+  register: _sources_list_files
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d/
+
+- name: generate file list
+  ansible.builtin.set_fact:
+    _sources_list_files: "{{ _sources_list_files.files | map(attribute='path') + [ '/etc/apt/sources.list' ] }}"
+
+# handle bullseye release source change (https://wiki.debian.org/SourcesList?action=diff&rev1=32&rev2=33)
+- name: undo sources.list patch (bullseye security switch)
+  when:
+    - _from_release == 'bullseye'
+    - _to_release in ['buster', 'stretch', 'jessie']
+  ansible.builtin.replace:
+    path: /etc/apt/sources.list
+    regexp: '(^.+)\bbullseye-security\b(.+$)'
+    replace: '\g<1>bullseye/updates\g<2>'
+
+- name: patch sources.list files for distribution update
+  loop: "{{ _sources_list_files if _sources_list_files | type_debug == 'list' else [] }}"
+  loop_control:
+    loop_var: _sources_list_file
+    label: "{{ _sources_list_file }}"
+  ansible.builtin.replace:
+    path: "{{ _sources_list_file }}"
+    regexp: '(^.+)\b{{ _from_release }}\b(.+$)'
+    replace: '\g<1>{{ _to_release }}\g<2>'
+
+# handle bullseye release  source change (https://wiki.debian.org/SourcesList?action=diff&rev1=32&rev2=33)
+- name: patch sources.list (bullseye security switch)
+  when:
+    - _to_release == 'bullseye'
+    - _from_release in ['buster', 'stretch', 'jessie']
+  ansible.builtin.replace:
+    path: /etc/apt/sources.list
+    regexp: '(^.+)\bbullseye/updates\b(.+$)'
+    replace: '\g<1>bullseye-security\g<2>'

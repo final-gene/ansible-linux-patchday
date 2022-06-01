@@ -1,0 +1,18 @@
+---
+- name: update apt repo and cache
+  ansible.builtin.apt:
+    update_cache: true
+    force_apt_get: true
+
+- name: upgrade safe packages
+  ansible.builtin.apt:
+    upgrade: safe
+
+- name: upgrade dist packages
+  ansible.builtin.apt:
+    upgrade: dist
+    autoremove: true
+    purge: true
+
+- name: reboot if necessary
+  ansible.builtin.include_tasks: reboot.yml

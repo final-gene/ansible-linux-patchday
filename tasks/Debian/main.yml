@@ -1,0 +1,31 @@
+---
+- name: perform upgrade
+  ansible.builtin.include_tasks: upgrade.yml
+
+- name: try to perform distribution update
+  when:
+    - linux_patchday_distro_upgrade
+    - linux_patchday_distro_release is defined
+  block:
+    - name: perform distribution update
+      when: ansible_distribution_release != linux_patchday_distro_release
+      ansible.builtin.include_tasks: distribution_upgrade.yml
+
+    - name: distribution update not necessary
+      when: ansible_distribution_release == linux_patchday_distro_release
+      ansible.builtin.pause:
+        seconds: 1
+        prompt: |
+          The system is already up to date, no distribution update performed.
+
+  rescue:
+    - name: undo distribution update patches
+      ansible.builtin.include_tasks: patch_files.yml
+      vars:
+        _from_release: "{{ linux_patchday_distro_release }}"
+        _to_release: "{{ ansible_distribution_release }}"
+
+    - name: abort distribution update
+      ansible.builtin.fail:
+        msg: |
+          distribution update aborted due to earlier errors

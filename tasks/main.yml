@@ -1,0 +1,37 @@
+---
+- name: gather facts
+  ansible.builtin.setup:
+
+- name: store initial version
+  ansible.builtin.set_fact:
+    _start_distribution_version: "{{ ansible_distribution_version }}"
+    _start_kernel_version: "{{ ansible_kernel_version }}"
+
+- name: display release information
+  ansible.builtin.pause:
+    seconds: 1
+    prompt: |
+      {{ lookup('template', 'release_info.j2') }}
+
+- name: display kernel information
+  ansible.builtin.pause:
+    seconds: 1
+    prompt: |
+      {{ lookup('template', 'kernel_info.j2') }}
+
+- name: include distribution tasks
+  ansible.builtin.include_tasks: '{{ ansible_distribution }}/main.yml'
+
+- name: display new release information
+  when: _start_distribution_version != ansible_distribution_version
+  ansible.builtin.pause:
+    seconds: 1
+    prompt: |
+      {{ lookup('template', 'release_info.j2') }}
+
+- name: display new kernel information
+  when: _start_kernel_version != ansible_kernel_version
+  ansible.builtin.pause:
+    seconds: 1
+    prompt: |
+      {{ lookup('template', 'kernel_info.j2') }}
