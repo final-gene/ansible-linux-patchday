@@ -6,6 +6,10 @@ on:
     branches:
       - main
 
+defaults:
+  run:
+    working-directory: 'finalgene.linux_patchday'
+
 jobs:
   import:
     name: Publish Role on Ansible Galaxy
@@ -14,6 +18,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
+        with:
+          path: 'finalgene.linux_patchday'
 
       - name: galaxy
         uses: robertdebock/galaxy-action@1.2.1
