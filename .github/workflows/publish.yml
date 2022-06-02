@@ -5,10 +5,8 @@ on:
   push:
     branches:
       - main
-
-defaults:
-  run:
-    working-directory: 'finalgene.linux_patchday'
+    tags:
+      - '*'
 
 jobs:
   import:
@@ -16,11 +14,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: checkout
-        uses: actions/checkout@v3
-        with:
-          path: 'finalgene.linux_patchday'
-
       - name: galaxy
         uses: robertdebock/galaxy-action@1.2.1
         with:
