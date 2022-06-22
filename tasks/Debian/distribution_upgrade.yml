@@ -72,7 +72,8 @@
 
     - name: get available disk space on root patition
       ansible.builtin.set_fact:
-        _space_available: "{{ ansible_mounts | community.general.json_query('[?mount==`/`].size_available') | first }}"
+        _space_available: >-
+          {{ ansible_mounts | community.general.json_query('[?mount==`' ~ linux_patchday_root_fs_mount | default('/') ~ '`].size_available') | first }}
 
     - name: check disk space
       ansible.builtin.assert:
