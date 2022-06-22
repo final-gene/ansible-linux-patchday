@@ -32,6 +32,13 @@ jobs:
           # don't upgrade the latest version
           - distro: debian11
             upgrade_to: bullseye
+          - distro: ubuntu1804
+            upgrade_to: focal
+          - distro: ubuntu2004
+            upgrade_to: jammy
+          # don't upgrade the latest version
+          - distro: ubuntu2204
+            upgrade_to: jammy
       fail-fast: false
 
     steps:
