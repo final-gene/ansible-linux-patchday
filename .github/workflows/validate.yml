@@ -1,8 +1,7 @@
 ---
-name: Ansible Lint
+name: Validate and test role
 on:
   - push
-  - pull_request
 
 jobs:
   lint:
@@ -14,3 +13,45 @@ jobs:
 
       - name: Run ansible-lint
         uses: ansible-community/ansible-lint-action@v6.2.1
+
+  molecule:
+    name: Run Molecule Tests
+    defaults:
+      run:
+        working-directory: finalgene.linux_patchday
+    needs:
+      - lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - distro: debian9
+            upgrade_to: buster
+          - distro: debian10
+            upgrade_to: bullseye
+          # don't upgrade the latest version
+          - distro: debian11
+            upgrade_to: bullseye
+      fail-fast: false
+
+    steps:
+      - name: Check out the codebase.
+        uses: actions/checkout@v3
+        with:
+          path: finalgene.linux_patchday
+
+      - name: Set up Python 3.
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install test dependencies.
+        run: pip3 install ansible molecule[docker] docker jmespath
+
+      - name: Run Molecule tests.
+        run: pwd; ls -la; molecule test
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+          MOLECULE_DISTRO: ${{ matrix.distro }}
+          LINUX_PATCHDAY_DISTRO_RELEASE: ${{ matrix.upgrade_to }}

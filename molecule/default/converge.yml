@@ -1,0 +1,16 @@
+---
+- name: Converge Upgrade
+  hosts: all
+  vars:
+    linux_patchday_distro_upgrade: false
+
+  roles:
+    - role: finalgene.linux_patchday
+
+- name: Converge Distro Upgrade
+  hosts: all
+  vars:
+    linux_patchday_distro_upgrade: true
+
+  roles:
+    - role: finalgene.linux_patchday

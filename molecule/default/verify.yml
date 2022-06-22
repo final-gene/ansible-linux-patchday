@@ -1,0 +1,9 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+    - name: check os version
+      ansible.builtin.assert:
+        that: ansible_distribution_release == linux_patchday_distro_release
+        success_msg: Distirbution upgrade succeeded.
+        fail_msg: Distirbution upgrade failed!
