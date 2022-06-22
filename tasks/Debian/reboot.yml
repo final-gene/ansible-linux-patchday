@@ -6,7 +6,9 @@
     get_checksum: false
 
 - name: reboot and gather facts
-  when: reboot_required_file.stat.exists
+  when:
+    - reboot_required_file.stat.exists
+    - not 'container' in ansible_virtualization_tech_guest
   block:
     - name: reboot
       block:
