@@ -5,10 +5,16 @@
     force_apt_get: true
 
 - name: upgrade safe packages
+  register: _apt_safe_upgrade
+  until: _apt_safe_upgrade is succeeded
+  retries: 2
   ansible.builtin.apt:
     upgrade: safe
 
 - name: upgrade dist packages
+  register: _apt_dist_upgrade
+  until: _apt_dist_upgrade is succeeded
+  retries: 2
   ansible.builtin.apt:
     upgrade: dist
     autoremove: true
