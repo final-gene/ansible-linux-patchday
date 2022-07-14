@@ -7,6 +7,8 @@
     LANGUAGE: en
     LANG: en_US.UTF-8
     DEBIAN_FRONTEND: noninteractive
+  async: "{{ linux_patchday_package_manager_timeout }}"
+  poll: 1
   ansible.builtin.shell:
     cmd: >
       apt-get update >/dev/null &&

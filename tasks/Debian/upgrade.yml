@@ -1,5 +1,7 @@
 ---
 - name: update apt repo and cache
+  async: "{{ linux_patchday_package_manager_timeout }}"
+  poll: 1
   ansible.builtin.apt:
     force_apt_get: true
     update_cache: true
@@ -10,9 +12,8 @@
     _dist_upgrade: false
 
 - name: upgrade safe packages
-  register: _apt_safe_upgrade
-  until: _apt_safe_upgrade is succeeded
-  retries: 2
+  async: "{{ linux_patchday_package_manager_timeout }}"
+  poll: 10
   ansible.builtin.apt:
     force_apt_get: true
     upgrade: safe
@@ -23,9 +24,8 @@
     _dist_upgrade: true
 
 - name: upgrade dist packages
-  register: _apt_dist_upgrade
-  until: _apt_dist_upgrade is succeeded
-  retries: 2
+  async: "{{ linux_patchday_package_manager_timeout }}"
+  poll: 10
   ansible.builtin.apt:
     force_apt_get: true
     upgrade: dist
