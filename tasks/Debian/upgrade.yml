@@ -1,21 +1,33 @@
 ---
 - name: update apt repo and cache
+  async: "{{ linux_patchday_package_manager_timeout }}"
+  poll: 1
   ansible.builtin.apt:
-    update_cache: true
     force_apt_get: true
+    update_cache: true
+
+- name: ensure enough disk space is available to upgrade safe packages
+  ansible.builtin.include_tasks: check_disk_space.yml
+  vars:
+    _dist_upgrade: false
 
 - name: upgrade safe packages
-  register: _apt_safe_upgrade
-  until: _apt_safe_upgrade is succeeded
-  retries: 2
+  async: "{{ linux_patchday_package_manager_timeout }}"
+  poll: 10
   ansible.builtin.apt:
+    force_apt_get: true
     upgrade: safe
 
+- name: ensure enough disk space is available to upgrade dist packages
+  ansible.builtin.include_tasks: check_disk_space.yml
+  vars:
+    _dist_upgrade: true
+
 - name: upgrade dist packages
-  register: _apt_dist_upgrade
-  until: _apt_dist_upgrade is succeeded
-  retries: 2
+  async: "{{ linux_patchday_package_manager_timeout }}"
+  poll: 10
   ansible.builtin.apt:
+    force_apt_get: true
     upgrade: dist
     autoremove: true
     purge: true
