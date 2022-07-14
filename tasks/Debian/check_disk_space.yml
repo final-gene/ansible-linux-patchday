@@ -1,0 +1,31 @@
+---
+- name: get necessary disk space # noqa command-instead-of-module
+  register: _space_needed
+  changed_when: false
+  failed_when: false
+  environment:
+    LANGUAGE: en
+    LANG: en_US.UTF-8
+    DEBIAN_FRONTEND: noninteractive
+  ansible.builtin.shell:
+    cmd: >
+      apt-get update >/dev/null &&
+      apt-get -o APT::Get::Trivial-Only=true {{ 'dist-upgrade' if _dist_upgrade else 'upgrade' }} 2>/dev/null |
+      grep 'additional disk space' |
+      cut -d ' ' -f 4,5 |
+      sed 's/ \(.\).*/\U\1/g' |
+      numfmt --from=auto
+
+- name: get available disk space on root patition
+  ansible.builtin.set_fact:
+    _space_available: >-
+      {{ ansible_mounts | community.general.json_query('[?mount==`' ~ linux_patchday_root_fs_mount | default('/') ~ '`].size_available') | first }}
+
+- name: check disk space
+  ansible.builtin.assert:
+    that:
+      - _space_available | int > _space_needed.stdout | int
+    success_msg: disk space check successful
+    fail_msg: >-
+      {{ 'Distribution update' if _dist_upgrade else 'Update' }} aborted due to insufficent disk space on root partition
+      ({{ _space_available }} bytes available, {{ _space_needed.stdout }} bytes necessary)
