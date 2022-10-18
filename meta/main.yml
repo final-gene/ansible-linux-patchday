@@ -1,6 +1,7 @@
 ---
 galaxy_info:
   role_name: linux_patchday
+  namespace: finalgene
   author: Frank Giesecke
   description: Patch and update Linux systems
   company: final gene
